@@ -1,7 +1,7 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import {
-  Video, Languages, Activity, Download, BrainCircuit, Mic,
-  CheckCircle2, AlertCircle, Zap, Music, FileText, Globe, Settings
+  Video, Activity, Download, BrainCircuit, Mic,
+  CheckCircle2, AlertCircle, Music, FileText, Globe
 } from 'lucide-react';
 
 
@@ -49,44 +49,7 @@ async function readSSEStream(
   }
 }
 
-// ─── Progress Stepper ───────────────────────────────────────────────────────
-const DL_STEPS = [
-  { id: 'downloading', icon: Download, label: 'Đang tải' },
-  { id: 'done', icon: CheckCircle2, label: 'Xong' },
-];
 
-function Stepper({ steps, currentStep, message }: { steps: typeof DL_STEPS; currentStep: string; message: string }) {
-  const currentIdx = Math.max(0, steps.findIndex(s => s.id === currentStep));
-  return (
-    <div className="w-full flex flex-col gap-5 bg-[#0B0F19]/80 rounded-2xl p-7 border border-white/5 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cta/5 to-transparent -translate-x-full animate-[shimmer_2s_infinite]"></div>
-      <div className="flex flex-col items-center gap-1 z-10">
-        <p className="text-white font-medium flex items-center gap-2"><Activity className="w-4 h-4 text-cta animate-pulse" /> Đang xử lý</p>
-        <p className="text-gray-400 text-sm animate-pulse">{message}</p>
-      </div>
-      <div className="flex items-center justify-between w-full relative px-4 z-10">
-        <div className="absolute top-5 left-[10%] right-[10%] h-[2px] bg-white/10 rounded-full"></div>
-        <div
-          className="absolute top-5 left-[10%] h-[2px] bg-gradient-to-r from-cta to-pink-500 rounded-full transition-all duration-700 shadow-[0_0_10px_#E11D484D]"
-          style={{ width: `${(currentIdx / (steps.length - 1)) * 80}%` }}
-        ></div>
-        {steps.map((s, i) => {
-          const Icon = s.icon;
-          const active = i === currentIdx, past = i < currentIdx;
-          return (
-            <div key={s.id} className="flex flex-col items-center gap-2 w-1/4">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-500 relative ${active ? 'bg-[#1a0b12] border-cta text-cta shadow-[0_0_20px_#E11D484D] scale-110' : past ? 'bg-cta border-cta text-white' : 'bg-[#0f172a] border-white/10 text-gray-600 scale-95'}`}>
-                <Icon className={`w-5 h-5 ${active && i < steps.length - 1 ? 'animate-bounce' : ''}`} />
-                {active && <div className="absolute inset-0 rounded-full border border-cta animate-ping opacity-20"></div>}
-              </div>
-              <span className={`text-xs font-medium text-center ${active ? 'text-white' : past ? 'text-gray-300' : 'text-gray-600'}`}>{s.label}</span>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
 
 const FPT_VOICES = [
   { code: 'banmai', label: '🎙️ Ban Mai — Nữ Bắc ⭐', region: 'Bắc' },
