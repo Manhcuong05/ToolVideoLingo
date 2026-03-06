@@ -31,7 +31,7 @@ def download_audio(url: str, output_dir: str = "static") -> dict:
     
     ydl_opts = {
         # Use a broad format that accepts any audio stream
-        'format': 'bestaudio/best',
+        'format': 'bestaudio/best/worst',
         'outtmpl': output_template,
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
