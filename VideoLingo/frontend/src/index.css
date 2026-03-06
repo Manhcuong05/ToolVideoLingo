@@ -1,0 +1,51 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --color-background: #000000;
+  --color-primary: #0F0F23;
+  --color-secondary: #1E1B4B;
+  --color-cta: #E11D48;
+  --color-textMain: #F8FAFC;
+  --font-sans: 'Plus Jakarta Sans', sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-background text-textMain antialiased;
+    font-family: var(--font-sans);
+  }
+}
+
+@layer components {
+
+  /* Glassmorphism Styles */
+  .glass-card {
+    @apply bg-primary/60 backdrop-blur-md border border-white/20 shadow-xl rounded-2xl;
+  }
+
+  .glass-button {
+    @apply bg-cta/90 hover:bg-cta text-textMain font-semibold py-3 px-6 rounded-xl transition-all duration-300 ease-in-out border border-white/10 drop-shadow-[0_0_15px_#E11D484D] hover:drop-shadow-[0_0_25px_#E11D4880];
+  }
+
+  .glass-input {
+    @apply bg-secondary/50 border border-white/10 text-textMain rounded-xl focus:outline-none focus:ring-2 focus:ring-cta/50 focus:border-transparent placeholder-gray-400 backdrop-blur-sm transition-all duration-300;
+  }
+
+  /* Modern minimal audio element */
+  audio::-webkit-media-controls-panel {
+    background-color: rgba(30, 27, 75, 0.8);
+  }
+
+  audio::-webkit-media-controls-current-time-display,
+  audio::-webkit-media-controls-time-remaining-display {
+    color: white;
+  }
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
