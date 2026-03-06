@@ -30,25 +30,25 @@ def download_audio(url: str, output_dir: str = "static") -> dict:
     cookies_file = _get_cookies_file()
     
     ydl_opts = {
-        'format': 'bestaudio[ext=webm]/bestaudio[ext=m4a]/bestaudio/best',
+        # Use a broad format that accepts any audio stream
+        'format': 'bestaudio/best',
         'outtmpl': output_template,
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
-            'preferredquality': '192',
+            'preferredquality': '128',
         }],
         'quiet': False,
         'nocheckcertificate': True,
         'retries': 5,
         'fragment_retries': 5,
+        # Don't download playlists — just the single video
+        'noplaylist': True,
         'http_headers': {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
             'Accept-Language': 'en-US,en;q=0.9',
         },
         'extractor_args': {
-            'youtube': {
-                'player_client': ['android', 'web'],
-            },
             'youtubetab': {
                 'skip': ['authcheck'],
             },
