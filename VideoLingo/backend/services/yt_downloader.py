@@ -30,7 +30,7 @@ def download_audio(url: str, output_dir: str = "static") -> dict:
     cookies_file = _get_cookies_file()
     
     ydl_opts = {
-        'format': 'bestaudio/best',
+        'format': 'bestaudio[ext=webm]/bestaudio[ext=m4a]/bestaudio/best',
         'outtmpl': output_template,
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
@@ -48,7 +48,10 @@ def download_audio(url: str, output_dir: str = "static") -> dict:
         'extractor_args': {
             'youtube': {
                 'player_client': ['android', 'web'],
-            }
+            },
+            'youtubetab': {
+                'skip': ['authcheck'],
+            },
         },
     }
 
