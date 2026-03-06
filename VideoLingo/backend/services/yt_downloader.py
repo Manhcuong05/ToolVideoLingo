@@ -53,4 +53,4 @@ def download_audio(url: str, output_dir: str = "static") -> dict:
         }
     except Exception as e:
         print(f"Error downloading video: {e}")
-        return None
+        raise  # Re-raise so the caller sees the real error
