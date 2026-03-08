@@ -1,8 +1,8 @@
 FROM python:3.12-slim
 
-# Install ffmpeg for yt-dlp dependencies
+# Install ffmpeg and nodejs for yt-dlp dependencies
 RUN apt-get update && \
-    apt-get install -y ffmpeg && \
+    apt-get install -y ffmpeg nodejs && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
