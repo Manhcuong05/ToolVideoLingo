@@ -15,6 +15,7 @@ def _get_cookies_file() -> str | None:
         tmp.write(content)
         tmp.flush()
         tmp.close()
+        print(f"Successfully loaded cookies to {tmp.name}")
         return tmp.name
     except Exception as e:
         print(f"Warning: Failed to decode YOUTUBE_COOKIES_B64: {e}")
@@ -53,7 +54,7 @@ def download_audio(url: str, output_dir: str = "static") -> dict:
                 'skip': ['authcheck'],
             },
             'youtube': {
-                'player_client': ['android', 'ios', 'mweb', 'web'],
+                'player_client': ['tv', 'web_embedded', 'android', 'ios', 'mweb', 'web'],
                 'player_skip': ['js', 'configs']
             }
         },
