@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, File, UploadFile
+from fastapi import FastAPI, HTTPException, File, UploadFile, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import StreamingResponse
@@ -15,13 +15,24 @@ from services import yt_downloader, gemini_ai, tts_generator
 
 app = FastAPI(title="VideoLingo API")
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+@app.middleware("http")
+async def add_cors_header(request, call_next):
+    if request.method == "OPTIONS":
+        response = Response(status_code=200)
+    else:
+        response = await call_next(request)
+    
+    origin = request.headers.get("Origin")
+    if not origin:
+        origin = "*"
+        
+    response.headers["Access-Control-Allow-Origin"] = origin
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, bypass-tunnel-reminder, x-requested-with"
+    response.headers["Access-Control-Allow-Credentials"] = "true"
+    response.headers["Access-Control-Expose-Headers"] = "*"
+    
+    return response
 
 os.makedirs("static", exist_ok=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
