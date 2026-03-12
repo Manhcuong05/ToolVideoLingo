@@ -27,7 +27,7 @@ async function readSSEStream(
 ) {
   const response = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'bypass-tunnel-reminder': 'true' },
     body: JSON.stringify(body),
   });
   if (!response.ok) throw new Error('Server error: ' + response.status);
@@ -76,7 +76,7 @@ function RenameControl({ url, defaultName, onRename }: { url: string, defaultNam
     try {
       const res = await fetch(`${API}/api/rename-file`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'bypass-tunnel-reminder': 'true' },
         body: JSON.stringify({ old_filename, new_filename: name.trim() })
       });
       const data = await res.json();
@@ -143,6 +143,7 @@ function TabManual() {
 
         const res = await fetch(`${API}/api/upload-audio`, {
           method: 'POST',
+          headers: { 'bypass-tunnel-reminder': 'true' },
           body: formData,
         });
         const data = await res.json();
@@ -158,7 +159,7 @@ function TabManual() {
     try {
       const res = await fetch(`${API}/api/transcribe`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'bypass-tunnel-reminder': 'true' },
         body: JSON.stringify({ audio_filename: dlData.audio_filename, target_language: targetLang }),
       });
       const data = await res.json();
@@ -182,7 +183,7 @@ function TabManual() {
     try {
       const res = await fetch(`${API}/api/tts-only`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'bypass-tunnel-reminder': 'true' },
         body: JSON.stringify({ text: translatedText.trim(), lang: 'vi', voice }),
       });
       const data = await res.json();
