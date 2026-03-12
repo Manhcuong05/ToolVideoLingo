@@ -52,6 +52,9 @@ def download_audio(url: str, output_dir: str = "static") -> dict:
             'youtubetab': {
                 'skip': ['authcheck'],
             },
+            'youtube': {
+                'player_client': ['android', 'web'],
+            }
         },
     }
 

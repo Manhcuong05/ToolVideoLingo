@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import StreamingResponse
@@ -6,6 +6,7 @@ from pydantic import BaseModel
 import os
 import json
 import asyncio
+import shutil
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -149,6 +150,32 @@ async def download_only(req: DownloadRequest):
         except Exception as e:
             yield f"data: {json.dumps({'status': 'error', 'message': str(e)})}\n\n"
     return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+
+@app.post("/api/upload-audio")
+async def upload_audio(file: UploadFile = File(...)):
+    """Upload a file directly and bypass yt-dlp downloading."""
+    try:
+        import uuid
+        file_id = str(uuid.uuid4())
+        ext = file.filename.split('.')[-1] if '.' in file.filename else 'mp4'
+        safe_filename = f"{file_id}.{ext}"
+        filepath = os.path.join("static", safe_filename)
+        
+        with open(filepath, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+            
+        return {
+            "status": "success",
+            "audio_filename": safe_filename,
+            "title": file.filename,
+            "duration": 0,
+            "audio_url": f"/static/{safe_filename}",
+        }
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 
 @app.post("/api/rename-file")

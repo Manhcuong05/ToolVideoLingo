@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   Video, Activity, Download, BrainCircuit, Mic,
-  CheckCircle2, AlertCircle, Music, FileText, Globe
+  CheckCircle2, AlertCircle, Music, FileText, Globe, Upload
 } from 'lucide-react';
 
 
@@ -105,6 +105,8 @@ function RenameControl({ url, defaultName, onRename }: { url: string, defaultNam
 // ─── Tab: Manual Pipeline ──────────────────────────────────────────────────────
 function TabManual() {
   const [url, setUrl] = useState('');
+  const [sourceType, setSourceType] = useState<'url' | 'file'>('url');
+  const [file, setFile] = useState<File | null>(null);
   const [targetLang, setTargetLang] = useState('vi');
 
   const [phase, setPhase] = useState<'idle' | 'downloading' | 'downloaded' | 'processing' | 'ready' | 'ttsing' | 'done'>('idle');
@@ -119,17 +121,35 @@ function TabManual() {
 
   async function handleDownload(e: React.FormEvent) {
     e.preventDefault();
-    if (!url) return;
-    setPhase('downloading'); setDlData(null); setOriginalText(''); setTranslatedText(''); setTtsData(null); setError(''); setMsg('Đang tải video/âm thanh...');
+    if (sourceType === 'url' && !url) return;
+    if (sourceType === 'file' && !file) return;
+
+    setPhase('downloading'); setDlData(null); setOriginalText(''); setTranslatedText(''); setTtsData(null); setError('');
+    setMsg(sourceType === 'url' ? 'Đang tải video/âm thanh...' : 'Đang tải file lên máy chủ...');
+
     try {
-      await readSSEStream(`${API}/api/download-only`, { url }, data => {
-        if (data.status === 'processing') setMsg(data.message);
-        else if (data.status === 'success') {
-          setDlData(data);
-          setPhase('downloaded');
-        }
-        else if (data.status === 'error') throw new Error(data.message);
-      });
+      if (sourceType === 'url') {
+        await readSSEStream(`${API}/api/download-only`, { url }, data => {
+          if (data.status === 'processing') setMsg(data.message);
+          else if (data.status === 'success') {
+            setDlData(data);
+            setPhase('downloaded');
+          }
+          else if (data.status === 'error') throw new Error(data.message);
+        });
+      } else {
+        const formData = new FormData();
+        formData.append('file', file!);
+
+        const res = await fetch(`${API}/api/upload-audio`, {
+          method: 'POST',
+          body: formData,
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Lỗi tải lên file');
+        setDlData(data);
+        setPhase('downloaded');
+      }
     } catch (err: any) { setError(err.message); setPhase('idle'); }
   }
 
@@ -182,12 +202,26 @@ function TabManual() {
 
       {/* STEP 1: DOWNLOAD */}
       <div className={`flex flex-col gap-4 transition-all duration-500 ${phase !== 'idle' && phase !== 'downloading' ? 'opacity-50' : ''}`}>
+        <div className="flex justify-center gap-2 mb-2">
+          <button type="button" onClick={() => setSourceType('url')} className={`px-4 py-2 text-sm rounded-full transition-colors ${sourceType === 'url' ? 'bg-cta text-white font-bold' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}>🔗 Dán Link YouTube</button>
+          <button type="button" onClick={() => setSourceType('file')} className={`px-4 py-2 text-sm rounded-full transition-colors ${sourceType === 'file' ? 'bg-blue-500 text-white font-bold' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}>📁 Tải File (Video/Audio)</button>
+        </div>
         <form onSubmit={handleDownload} className="flex flex-col gap-4">
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-grow">
-              <Video className="w-4 h-4 text-gray-500 absolute left-4 top-1/2 -translate-y-1/2" />
-              <input type="url" required value={url} onChange={e => setUrl(e.target.value)} disabled={phase !== 'idle'}
-                placeholder="https://www.youtube.com/watch?v=..." className="w-full glass-input px-4 py-3 pl-10 text-sm" />
+              {sourceType === 'url' ? (
+                <>
+                  <Video className="w-4 h-4 text-gray-500 absolute left-4 top-1/2 -translate-y-1/2" />
+                  <input type="url" required value={url} onChange={e => setUrl(e.target.value)} disabled={phase !== 'idle'}
+                    placeholder="https://www.youtube.com/watch?v=..." className="w-full glass-input px-4 py-3 pl-10 text-sm" />
+                </>
+              ) : (
+                <>
+                  <Upload className="w-4 h-4 text-gray-500 absolute left-4 top-1/2 -translate-y-1/2" />
+                  <input type="file" required onChange={e => setFile(e.target.files?.[0] || null)} disabled={phase !== 'idle'}
+                    accept="video/*,audio/*" className="w-full glass-input px-4 py-2 pl-10 text-sm file:mr-4 file:py-1 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-500 file:text-white hover:file:bg-blue-600" />
+                </>
+              )}
             </div>
             <select value={targetLang} onChange={e => setTargetLang(e.target.value)} disabled={phase !== 'idle'}
               className="glass-input px-4 py-3 text-sm cursor-pointer border-r-8 border-transparent">
@@ -197,9 +231,9 @@ function TabManual() {
               <option value="ja">🇯🇵 日本語</option>
               <option value="ko">🇰�� 한국어</option>
             </select>
-            <button type="submit" disabled={phase !== 'idle' || !url}
+            <button type="submit" disabled={phase !== 'idle' || (sourceType === 'url' ? !url : !file)}
               className="glass-button flex items-center justify-center gap-2 px-6 py-3 whitespace-nowrap disabled:opacity-50 hover:scale-[1.02] transition-transform text-sm">
-              {phase === 'downloading' ? <><Activity className="animate-spin w-4 h-4" /> Đang tải...</> : <><Download className="w-4 h-4" /> Bắt đầu tải</>}
+              {phase === 'downloading' ? <><Activity className="animate-spin w-4 h-4" /> Đang xử lý...</> : <><Download className="w-4 h-4" /> Bắt đầu {sourceType === 'url' ? 'tải' : 'tải lên'}</>}
             </button>
           </div>
         </form>
